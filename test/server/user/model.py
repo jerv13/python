@@ -42,7 +42,7 @@ def get_user(id):
 
 
 def update_user(id, properties):
-    # @todo Validate properties
+    
     user = get_user(id)
 
     if user is None:
