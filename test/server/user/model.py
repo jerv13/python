@@ -7,6 +7,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120), unique=True)
 
+    # @todo Extractor
     def to_dict(self):
         return {
         'id': self.id,
@@ -14,24 +15,57 @@ class User(db.Model):
         'email': self.email
         }
 
-    def __init__(self, username, email):
-        self.username = username
-        self.email = email
+    # def __init__(self, username, email):
+    #     self.username = username
+    #     self.email = email
 
     def __repr__(self):
         return '<User %r>' % self.username
 
 
-def create_user(username, email):
-    new_user = User('username', 'email@email.com')
+def create_user(properties):
+    # @todo Validate properties
+    new_user = User()
+    new_user = hydrate(new_user, properties)
     db.session.add(new_user)
     db.session.commit()
+    print 'User created: %s' % new_user.id
     return new_user
 
 
 def get_user(id):
-    user = db.session.query(User).filter_by(id=id).one()
-    db.session.refresh(user)
-    print 'User GET: %s' % user.username
+    db.session.commit()
+    user = db.session.query(User).filter_by(id=id).first()
+    print 'User get: %s' % user
+
+    return user
+
+
+def update_user(id, properties):
+    # @todo Validate properties
+    user = get_user(id)
+
+    if user is None:
+        return None
+
+    user = hydrate(user, properties)
+
+    db.session.commit()
+
+    print 'User update: %s' % user.username
+
+    return user
+
+
+def hydrate(user, properties):
+    if type(user) is not User:
+        # @todo Throw error
+        return user
+
+    if properties.has_key('username'):
+        user.username = properties['username']
+
+    if properties.has_key('email'):
+        user.email = properties['email']
 
     return user

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:p@localhost/python'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
@@ -15,18 +16,30 @@ def index():
 def create_user():
     import user.model as model
 
-    content = request.get_json()
-    # request.method
-    # @todo Validation??
-    user = model.create_user(content['username'], content['email'])
+    properties = request.get_json()
+    # @todo Validate properties
 
-    return 'User created: %s' % user.id
+    user = model.create_user(properties)
+    return jsonify(user.to_dict())
 
+@app.route('/user/<int:id>', methods=['PUT'])
+def update_user(id):
+    import user.model as model
+
+    properties = request.get_json()
+    # @todo Validate properties
+
+    user = model.update_user(id, properties)
+    return jsonify(user.to_dict())
 
 @app.route('/user/<int:id>', methods=['GET'])
 def get_user(id):
     import user.model as model
     user = model.get_user(id)
+
+    if user is None:
+        return 'null', 404
+
     return jsonify(user.to_dict())
 
 
